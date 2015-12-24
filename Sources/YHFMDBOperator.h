@@ -19,28 +19,34 @@
 // execute sql
 - (BOOL)executeSql:(NSString *)sql;
 
-// insert given model to db
+// insert
 - (BOOL)insert:(YHBaseModel *)data;
 
-// delete given model
+// delete by primary key
 - (BOOL) delete:(YHBaseModel *)data;
 
-// delete all model data for the class
+// delete all
 - (BOOL)deleteAll:(Class)cls;
 
-// delete model data for the class specified condition
+// delete by condition
 - (BOOL) delete:(Class)cls where:(NSString *)condition;
 
-// update model
+// update by primary key
 - (BOOL)update:(YHBaseModel *)data;
 
-// update model data for the class specified condition
+// update by condition
 - (BOOL)update:(YHBaseModel *)data where:(NSString *)condition;
 
 // find all
 - (NSArray *)findAll:(Class)cls;
 
-//
+// find by condition
 - (NSArray *)find:(Class)cls where:(NSString *)condition;
+
+// count all
+- (int)count:(Class)cls;
+
+// count by condition
+- (int)count:(Class)cls where:(NSString *)condition;
 
 @end

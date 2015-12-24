@@ -210,6 +210,32 @@ static YHFMDBOperator *operator= nil;
     return resultArray;
 }
 
+#pragma mark Count
+// count all
+- (int)count:(Class)cls{
+    return [self count:cls where:nil];
+}
+
+// count by condition
+- (int)count:(Class)cls where:(NSString *)condition{
+    __block int recordCount = 0;
+    
+    [self.dbQueue inDatabase:^(FMDatabase *db) {
+        NSString *sql = [NSString stringWithFormat:@"SELECT COUNT(%@) FROM %@",kModelPrimaryKey, NSStringFromClass(cls)];
+        if (condition) {
+            sql = [NSString stringWithFormat:@"%@ WHERE %@", sql, condition];
+        }
+        FMResultSet *result = [db executeQuery:sql];
+        while ([result next]) {
+            NSString *col = result.columnNameToIndexMap.allKeys[0];
+            NSNumber *value = [result objectForColumnName:col];
+            recordCount = value.intValue;
+        }
+    }];
+    
+    return recordCount;
+}
+
 #pragma mark Create Table
 // create table with model
 - (BOOL)createTable:(Class)cls {

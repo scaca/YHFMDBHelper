@@ -91,4 +91,18 @@
     return [operator find:cls where:condition];
 }
 
+#pragma mark Count
++ (int)count:(Class)cls{
+    YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
+    return [operator count:cls];
+}
+
+
++ (int)count:(Class)cls where:(NSString *)condition{
+    if (!condition || [NSString isEmpty:condition]) {
+        return [[self class] count:cls];
+    }
+    YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
+    return [operator count:cls where:condition];}
+
 @end

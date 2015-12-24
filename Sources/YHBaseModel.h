@@ -21,6 +21,7 @@
 @interface YHBaseModel : NSObject
 
 // 主键 primary key
+// 如果要修改数据库表主键,请一并修改 kModelPrimaryKey宏定义
 @property(nonatomic, copy) NSString *pk;
 
 // 创建数据库时需要忽略的字段列表

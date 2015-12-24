@@ -52,13 +52,13 @@
     }
 }
 
-- (void)test10_SearchAll {
+- (void)test100_SearchAll {
     NSArray *contacts = [YHFMDBUtils searchAll:[YHContact class]];
 
     XCTAssertTrue(contacts.count > 0);
 }
 
-- (void)test11_SearchWhereEq {
+- (void)test101_SearchWhereEq {
     YHContact *contact = [[YHContact alloc] init];
 
     NSString *condtion = @key(contact.name).eq(@"");
@@ -67,7 +67,7 @@
     XCTAssertTrue(contacts.count == 0);
 }
 
-- (void)test12_SearchWhereNot_Eq {
+- (void)test102_SearchWhereNot_Eq {
     YHContact *contact = [[YHContact alloc] init];
 
     NSString *condtion = @key(contact.married).not_eq (@YES);
@@ -76,7 +76,7 @@
     XCTAssertTrue(contacts.count > 0);
 }
 
-- (void)test13_SearchWhereGt {
+- (void)test103_SearchWhereGt {
     YHContact *contact = [[YHContact alloc] init];
 
     NSString *condtion = @key(contact.age).gt(@100);
@@ -85,7 +85,7 @@
     XCTAssertTrue(contacts.count == 0);
 }
 
-- (void)test14_SearchWhereGt_Eq {
+- (void)test104_SearchWhereGt_Eq {
     YHContact *contact = [[YHContact alloc] init];
 
     NSString *condtion = @key(contact.age).gt_and_eq(@11);
@@ -94,7 +94,7 @@
     XCTAssertTrue(contacts.count > 0);
 }
 
-- (void)test15_SearchWhereLt {
+- (void)test105_SearchWhereLt {
     YHContact *contact = [[YHContact alloc] init];
 
     NSString *condtion = @key(contact.height).lt(@0.0f);
@@ -103,13 +103,19 @@
     XCTAssertTrue(contacts.count == 0);
 }
 
-- (void)test16_SearchWhereLt_Eq {
+- (void)test106_SearchWhereLt_Eq {
     YHContact *contact = [[YHContact alloc] init];
 
     NSString *condtion = @key(contact.height).lt_and_eq(@1.5f);
     NSArray *contacts = [YHFMDBUtils search:[YHContact class] where:condtion];
 
     XCTAssertTrue(contacts.count > 0);
+}
+
+- (void)test31_Count {
+    int count = [YHFMDBUtils count:[YHContact class]];
+    
+    XCTAssertTrue(count > 1);
 }
 
 - (void)test99999_RemoveAll {

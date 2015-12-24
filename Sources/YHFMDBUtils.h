@@ -39,22 +39,79 @@
 + (BOOL)remove:(YHBaseModel *)model;
 
 /**
- *  删除Model的class对应的整张表
+ *  删除class对应表的所有记录
  *
- *  @param cls 数据库Model的class
+ *  @param cls 数据库Model对应的class
  *
  *  @return 是否清除成功
  */
 + (BOOL)clearAll:(Class)cls;
 
+/**
+ *  根据WHERE条件删除class对应的表记录
+ *
+ *  @param cls 数据库Model的class
+ *  @param condition WHERE条件
+ *
+ *  @return 是否删除成功
+ */
 + (BOOL)remove:(Class)cls where:(NSString *)condition;
 
+/**
+ *  根据主键修改Model对象对应的记录
+ *
+ *  @param model 将要修改的Model对象
+ *
+ *  @return 是否修改成功
+ */
 + (BOOL)modify:(YHBaseModel *)model;
 
+/**
+ *  根据WHERE条件修改class对应的表记录
+ *
+ *  @param cls 数据库Model的class
+ *  @param condition WHERE条件
+ *
+ *  @return 是否修改成功
+ */
 + (BOOL)modify:(YHBaseModel *)model where:(NSString *)condition;
 
+/**
+ *  查询class对应表的所有记录
+ *
+ *  @param cls 数据库Model对应的class
+ *
+ *  @return 所有记录列表
+ */
 + (NSArray *)searchAll:(Class)cls;
 
+/**
+ *  根据WHERE条件查询class对应的表记录
+ *
+ *  @param cls       数据库Model对应的class
+ *  @param condition WHERE条件
+ *
+ *  @return 符合条件的记录列表
+ */
 + (NSArray *)search:(Class)cls where:(NSString *)condition;
+
+/**
+ *  查询class对应的表记录的个数
+ *
+ *  @param cls 数据库Model对应的class
+ *
+ *  @return 记录个数
+ */
++ (int)count:(Class)cls;
+
+/**
+ *  根据WHERE条件查询class对应的表记录的个数
+ *
+ *  @param cls       数据库Model对应的class
+ *  @param condition WHERE条件
+ *
+ *  @return 符合条件的记录个数
+ */
++ (int)count:(Class)cls where:(NSString *)condition;
 
 @end

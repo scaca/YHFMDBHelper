@@ -45,7 +45,7 @@
  *
  *  @return 是否清除成功
  */
-+ (BOOL)clearAll:(Class)cls;
++ (BOOL)removeAll:(Class)cls;
 
 /**
  *  根据WHERE条件删除class对应的表记录
@@ -83,7 +83,7 @@
  *
  *  @return 所有记录列表
  */
-+ (NSArray *)searchAll:(Class)cls;
++ (NSArray *)search:(Class)cls;
 
 /**
  *  根据WHERE条件查询class对应的表记录
@@ -94,6 +94,29 @@
  *  @return 符合条件的记录列表
  */
 + (NSArray *)search:(Class)cls where:(NSString *)condition;
+
+/**
+ *  根据条件查询class对应的表记录
+ *
+ *  @param cls       数据库Model对应的class
+ *  @param condition WHERE条件
+ *  @param orderBy 排序
+ *
+ *  @return 符合条件的记录列表
+ */
++ (NSArray *)search:(Class)cls where:(NSString *)condition orderBy:(NSString *)orderBy;
+
+/**
+ *  根据条件查询class对应的表记录
+ *
+ *  @param cls       数据库Model对应的class
+ *  @param condition WHERE条件
+ *  @param orderBy 排序
+ *  @param limit 分页
+ *
+ *  @return 符合条件的记录列表
+ */
++ (NSArray *)search:(Class)cls where:(NSString *)condition orderBy:(NSString *)orderBy limit:(NSString *)limit;
 
 /**
  *  查询class对应的表记录的个数

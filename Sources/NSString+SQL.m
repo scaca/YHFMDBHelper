@@ -10,7 +10,7 @@
 
 @implementation NSString (SQL)
 
-YHObjectType YHObjectGetType(NSObject *value) {
+static YHObjectType YHObjectGetType(NSObject *value) {
     if (!value || value == (id)kCFNull) {
         return YHObjectTypeNil;
     }
@@ -26,7 +26,7 @@ YHObjectType YHObjectGetType(NSObject *value) {
     return YHObjectTypeUnknow;
 }
 
-NSString *YHGetOperatorString(YHOperatorType operatorType) {
+static NSString *YHGetOperatorString(YHOperatorType operatorType) {
     NSString *result = nil;
     switch (operatorType) {
         case YHOperatorTypeEq: {
@@ -51,14 +51,6 @@ NSString *YHGetOperatorString(YHOperatorType operatorType) {
         }
         case YHOperatorTypeLtAndEq: {
             result = @" <= ";
-            break;
-        }
-        case YHOperatorTypeNotGt: {
-            result = @" !> ";
-            break;
-        }
-        case YHOperatorTypeNotLt: {
-            result = @" !< ";
             break;
         }
         case YHOperatorTypeLk: {
@@ -153,20 +145,6 @@ NSString *YHEscapeChar(NSString *value) {
     };
 }
 
-// !<
-- (NSString * (^)(NSObject *value))not_lt {
-    return ^id(NSObject *value) {
-      return [self appendOperator:YHOperatorTypeNotLt value:value];
-    };
-}
-
-// !>
-- (NSString * (^)(NSObject *value))not_gt {
-    return ^id(NSObject *value) {
-      return [self appendOperator:YHOperatorTypeNotGt value:value];
-    };
-}
-
 // between and
 - (NSString * (^)(NSArray *values))btw_and {
     return ^id(NSArray *values) {
@@ -231,14 +209,14 @@ NSString *YHEscapeChar(NSString *value) {
     };
 }
 
-// like  （% _）需要转义
+// like
 - (NSString * (^)(NSString *value))lk {
     return ^id(NSString *value) {
       if ([NSString isEmpty:value]) {
           return @"";
       }
 
-      return [NSString stringWithFormat:@"%@ LIKE \\\'%@\\\'", self, value];
+      return [NSString stringWithFormat:@"%@ LIKE '%%%@%%'", self, value];
     };
 }
 
@@ -248,7 +226,7 @@ NSString *YHEscapeChar(NSString *value) {
       if ([NSString isEmpty:value]) {
           return @"";
       }
-      return [NSString stringWithFormat:@"%@ NOT LIKE \\\'%@\\\'", self, value];
+      return [NSString stringWithFormat:@"%@ NOT LIKE '%%%@%%'", self, value];
     };
 }
 // in
@@ -265,17 +243,17 @@ NSString *YHEscapeChar(NSString *value) {
                   YHObjectType itemType = YHObjectGetType(item);
                   if (itemType == YHObjectTypeString) {
                       if (i == 0) {
-                          [appendStr appendFormat:@"\\\'%@\\\'", item];
+                          [appendStr appendFormat:@"'%@'", item];
 
                       } else {
-                          [appendStr appendFormat:@",\\\'%@\\\'", item];
+                          [appendStr appendFormat:@",'%@'", item];
                       }
                   }
               }
-              return [NSString stringWithFormat:@"%@ IN (%@)", self, YHEscapeChar(appendStr)];
+              return [NSString stringWithFormat:@"%@ IN (%@)", self, appendStr];
           }
           case YHObjectTypeString: {
-              return [NSString stringWithFormat:@"%@ IN (\\\'%@\\\')", self, YHEscapeChar((NSString *)value)];
+              return [NSString stringWithFormat:@"%@ IN ('%@')", self, (NSString *)value];
           }
           default:
               return @"";
@@ -296,17 +274,17 @@ NSString *YHEscapeChar(NSString *value) {
                   YHObjectType itemType = YHObjectGetType(item);
                   if (itemType == YHObjectTypeString) {
                       if (i == 0) {
-                          [appendStr appendFormat:@"\\\'%@\\\'", item];
+                          [appendStr appendFormat:@"'%@'", item];
 
                       } else {
-                          [appendStr appendFormat:@",\\\'%@\\\'", item];
+                          [appendStr appendFormat:@",'%@'", item];
                       }
                   }
               }
-              return [NSString stringWithFormat:@"%@ NOT IN (%@)", self, YHEscapeChar(appendStr)];
+              return [NSString stringWithFormat:@"%@ NOT IN (%@)", self, appendStr];
           }
           case YHObjectTypeString: {
-              return [NSString stringWithFormat:@"%@ NOT IN (\\\'%@\\\')", self, YHEscapeChar((NSString *)value)];
+              return [NSString stringWithFormat:@"%@ NOT IN ('%@')", self, (NSString *)value];
           }
           default:
               return @"";
@@ -333,19 +311,12 @@ NSString *YHEscapeChar(NSString *value) {
     };
 }
 
-// order by
-- (NSString * (^)(NSArray *array))order_by {
-    return ^id(NSArray *array) {
-      if (!array || array.count <= 0) {
-          return self;
-      }
-      return [NSString stringWithFormat:@"%@ ORDER BY %@", self, [array componentsJoinedByString:@","]];
-    };
-}
-
 // desc
 - (NSString * (^)())desc {
     return ^id() {
+      if ([NSString isEmpty:self]) {
+          return @"";
+      }
       return [NSString stringWithFormat:@"%@ DESC", self];
     };
 }
@@ -353,7 +324,20 @@ NSString *YHEscapeChar(NSString *value) {
 // asc
 - (NSString * (^)())asc {
     return ^id() {
+      if ([NSString isEmpty:self]) {
+          return @"";
+      }
       return [NSString stringWithFormat:@"%@ ASC", self];
+    };
+}
+
+// limit‘s offset
+- (NSString * (^)(NSNumber *offset))offset {
+    return ^id(NSNumber *offset) {
+      if (!offset || [NSString isEmpty:self]) {
+          return @"";
+      }
+      return [NSString stringWithFormat:@"%@ OFFSET %@", self, offset];
     };
 }
 
@@ -361,7 +345,7 @@ NSString *YHEscapeChar(NSString *value) {
 
 #pragma mark 工具方法
 
-@implementation NSString (Utils)
+@implementation NSString (FMDBHelper)
 
 + (NSString *)generateUUID {
     CFUUIDRef uuid_ref = CFUUIDCreate(NULL);
@@ -401,4 +385,5 @@ NSString *YHEscapeChar(NSString *value) {
 
     return NO;
 }
+
 @end

@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0607EA0C1C2BFE15008239C5 /* YHContact.m in Sources */ = {isa = PBXBuildFile; fileRef = 061E60401C2AF34400D582F3 /* YHContact.m */; };
 		061E600D1C2AF0BF00D582F3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 061E600C1C2AF0BF00D582F3 /* main.m */; };
 		061E60101C2AF0BF00D582F3 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 061E600F1C2AF0BF00D582F3 /* AppDelegate.m */; };
 		061E60131C2AF0BF00D582F3 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 061E60121C2AF0BF00D582F3 /* ViewController.m */; };
@@ -320,6 +321,7 @@
 				061E603B1C2AF14600D582F3 /* NSString+SQL.m in Sources */,
 				061E60131C2AF0BF00D582F3 /* ViewController.m in Sources */,
 				061E60101C2AF0BF00D582F3 /* AppDelegate.m in Sources */,
+				0607EA0C1C2BFE15008239C5 /* YHContact.m in Sources */,
 				061E603E1C2AF14600D582F3 /* YHFMDBUtils.m in Sources */,
 				061E600D1C2AF0BF00D582F3 /* main.m in Sources */,
 				061E603C1C2AF14600D582F3 /* YHBaseModel.m in Sources */,

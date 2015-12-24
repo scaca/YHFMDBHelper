@@ -43,15 +43,13 @@
     return [operator delete:model];
 }
 
-+ (BOOL)clearAll:(Class)cls {
++ (BOOL)removeAll:(Class)cls {
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
     return [operator deleteAll:cls];
 }
 
 + (BOOL)remove:(Class)cls where:(NSString *)condition {
-    if (!condition || [NSString isEmpty:condition]) {
-        return NO;
-    }
+    
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
     return [operator delete:cls where:condition];
 }
@@ -59,9 +57,7 @@
 #pragma mark Modify
 
 + (BOOL)modify:(YHBaseModel *)model {
-    if (!model) {
-        return NO;
-    }
+    
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
     return [operator update:model];
 }
@@ -78,31 +74,38 @@
 
 #pragma mark Search
 
-+ (NSArray *)searchAll:(Class)cls {
++ (NSArray *)search:(Class)cls {
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
-    return [operator findAll:cls];
+    return [operator select:cls];
 }
 
 + (NSArray *)search:(Class)cls where:(NSString *)condition {
-    if (!condition || [NSString isEmpty:condition]) {
-        return [[self class] searchAll:cls];
-    }
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
-    return [operator find:cls where:condition];
+    return [operator select:cls where:condition];
+}
+
++ (NSArray *)search:(Class)cls where:(NSString *)condition orderBy:(NSString *)orderBy {
+    YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
+    return [operator select:cls where:condition orderBy:orderBy];
+}
+
++ (NSArray *)search:(Class)cls where:(NSString *)condition orderBy:(NSString *)orderBy limit:(NSString *)limit {
+    YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
+    return [operator select:cls where:condition orderBy:orderBy limit:limit];
 }
 
 #pragma mark Count
-+ (int)count:(Class)cls{
++ (int)count:(Class)cls {
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
     return [operator count:cls];
 }
 
-
-+ (int)count:(Class)cls where:(NSString *)condition{
++ (int)count:(Class)cls where:(NSString *)condition {
     if (!condition || [NSString isEmpty:condition]) {
         return [[self class] count:cls];
     }
     YHFMDBOperator *operator= [YHFMDBOperator shareOperator];
-    return [operator count:cls where:condition];}
+    return [operator count:cls where:condition];
+}
 
 @end

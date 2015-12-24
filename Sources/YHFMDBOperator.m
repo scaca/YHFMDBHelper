@@ -8,6 +8,7 @@
 
 #import <FMDB/FMDB.h>
 #import <objc/runtime.h>
+#import "NSString+SQL.h"
 #import "YHBaseModel.h"
 #import "YHFMDBOperator.h"
 
@@ -52,7 +53,7 @@ static YHFMDBOperator *operator= nil;
 }
 
 - (BOOL)executeSql:(NSString *)sql {
-    __block BOOL result = YES;
+    __block BOOL result = NO;
     [self.dbQueue inDatabase:^(FMDatabase *db) {
       result = [db executeUpdate:sql];
     }];
@@ -61,7 +62,7 @@ static YHFMDBOperator *operator= nil;
 
 #pragma mark Insert
 - (BOOL)insert:(YHBaseModel *)data {
-    __block BOOL result = YES;
+    __block BOOL result = NO;
 
     NSString *className = NSStringFromClass(data.class);
     NSMutableDictionary *propertyDictionary = self.modelMappingDictionary[className];
@@ -76,11 +77,8 @@ static YHFMDBOperator *operator= nil;
     }
 
     [self.dbQueue inDatabase:^(FMDatabase *db) {
-
       NSMutableString *sql = [@"" mutableCopy];
-      if (cols.count <= 0) {
-          result = NO;
-      } else {
+      if (cols.count > 0) {
           [sql appendFormat:@"INSERT INTO %@ (%@", NSStringFromClass(data.class), cols[0]];
           for (int i = 1; i < cols.count; i++) {
               [sql appendFormat:@",%@", cols[i]];
@@ -93,7 +91,6 @@ static YHFMDBOperator *operator= nil;
 
           NSMutableArray *array = [[NSMutableArray alloc] init];
           for (int i = 0; i < cols.count; i++) {
-              
               [array addObject:[data valueForKey:cols[i]]];
           }
           result = [db executeUpdate:sql withArgumentsInArray:array];
@@ -105,8 +102,11 @@ static YHFMDBOperator *operator= nil;
 #pragma mark Delete
 
 - (BOOL) delete:(YHBaseModel *)data {
-    __block BOOL result = YES;
+    __block BOOL result = NO;
 
+    if (!data) {
+        return NO;
+    }
     [self.dbQueue inDatabase:^(FMDatabase *db) {
       NSString *sql =
           [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@ = ?", NSStringFromClass(data.class), kModelPrimaryKey];
@@ -117,7 +117,7 @@ static YHFMDBOperator *operator= nil;
 }
 
 - (BOOL)deleteAll:(Class)cls {
-    __block BOOL result = YES;
+    __block BOOL result = NO;
 
     [self.dbQueue inDatabase:^(FMDatabase *db) {
       NSString *sql = [NSString stringWithFormat:@"DELETE FROM %@ ", NSStringFromClass(cls)];
@@ -127,11 +127,13 @@ static YHFMDBOperator *operator= nil;
 }
 
 - (BOOL) delete:(Class)cls where:(NSString *)condition {
-    __block BOOL result = YES;
+    __block BOOL result = NO;
 
     [self.dbQueue inDatabase:^(FMDatabase *db) {
-      NSString *sql = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", NSStringFromClass(cls), condition];
-      result = [db executeStatements:sql];
+      if (![NSString isEmpty:condition]) {
+          NSString *sql = [NSString stringWithFormat:@"DELETE FROM %@ WHERE %@", NSStringFromClass(cls), condition];
+          result = [db executeStatements:sql];
+      }
     }];
     return result;
 }
@@ -142,8 +144,11 @@ static YHFMDBOperator *operator= nil;
 }
 
 - (BOOL)update:(YHBaseModel *)data where:(NSString *)condition {
-    __block BOOL result = YES;
+    __block BOOL result = NO;
 
+    if (!data) {
+        return NO;
+    }
     NSString *className = NSStringFromClass(data.class);
     NSMutableDictionary *propertyDictionary = self.modelMappingDictionary[className];
 
@@ -158,9 +163,7 @@ static YHFMDBOperator *operator= nil;
     [self.dbQueue inDatabase:^(FMDatabase *db) {
 
       NSMutableString *sql = [@"" mutableCopy];
-      if (cols.count <= 1) {
-          result = NO;
-      } else {
+      if (cols.count > 1) {
           [sql appendFormat:@"UPDATE %@ SET ", NSStringFromClass(data.class)];
           for (int i = 0; i < cols.count; i++) {
               [sql appendFormat:@"%@ = ?,", cols[i]];
@@ -172,7 +175,7 @@ static YHFMDBOperator *operator= nil;
           for (int i = 0; i < cols.count; i++) {
               [array addObject:[data valueForKey:cols[i]]];
           }
-          if (condition) {
+          if (![NSString isEmpty:condition]) {
               [sql appendFormat:@" WHERE %@", condition];
           } else {
               [sql appendFormat:@" WHERE %@ = ?", kModelPrimaryKey];
@@ -185,17 +188,31 @@ static YHFMDBOperator *operator= nil;
 }
 
 #pragma mark Select
-- (NSArray *)findAll:(Class)cls {
-    return [self find:cls where:nil];
+- (NSArray *)select:(Class)cls {
+    return [self select:cls where:nil];
 }
 
-- (NSArray *)find:(Class)cls where:(NSString *)condition {
+- (NSArray *)select:(Class)cls where:(NSString *)condition {
+    return [self select:cls where:condition orderBy:nil];
+}
+
+- (NSArray *)select:(Class)cls where:(NSString *)condition orderBy:(NSString *)orderBy {
+    return [self select:cls where:condition orderBy:orderBy limit:nil];
+}
+
+- (NSArray *)select:(Class)cls where:(NSString *)condition orderBy:(NSString *)orderBy limit:(NSString *)limit {
     __block NSMutableArray *resultArray = [[NSMutableArray alloc] init];
 
     [self.dbQueue inDatabase:^(FMDatabase *db) {
       NSString *sql = [NSString stringWithFormat:@"SELECT * FROM %@", NSStringFromClass(cls)];
-      if (condition) {
+      if (![NSString isEmpty:condition]) {
           sql = [NSString stringWithFormat:@"%@ WHERE %@", sql, condition];
+      }
+      if (![NSString isEmpty:orderBy]) {
+          sql = [NSString stringWithFormat:@"%@ %@", sql, orderBy];
+      }
+      if (![NSString isEmpty:limit]) {
+          sql = [NSString stringWithFormat:@"%@ %@", sql, limit];
       }
       FMResultSet *result = [db executeQuery:sql];
       while ([result next]) {
@@ -212,27 +229,27 @@ static YHFMDBOperator *operator= nil;
 
 #pragma mark Count
 // count all
-- (int)count:(Class)cls{
+- (int)count:(Class)cls {
     return [self count:cls where:nil];
 }
 
 // count by condition
-- (int)count:(Class)cls where:(NSString *)condition{
+- (int)count:(Class)cls where:(NSString *)condition {
     __block int recordCount = 0;
-    
+
     [self.dbQueue inDatabase:^(FMDatabase *db) {
-        NSString *sql = [NSString stringWithFormat:@"SELECT COUNT(%@) FROM %@",kModelPrimaryKey, NSStringFromClass(cls)];
-        if (condition) {
-            sql = [NSString stringWithFormat:@"%@ WHERE %@", sql, condition];
-        }
-        FMResultSet *result = [db executeQuery:sql];
-        while ([result next]) {
-            NSString *col = result.columnNameToIndexMap.allKeys[0];
-            NSNumber *value = [result objectForColumnName:col];
-            recordCount = value.intValue;
-        }
+      NSString *sql = [NSString stringWithFormat:@"SELECT COUNT(%@) FROM %@", kModelPrimaryKey, NSStringFromClass(cls)];
+      if (![NSString isEmpty:condition]) {
+          sql = [NSString stringWithFormat:@"%@ WHERE %@", sql, condition];
+      }
+      FMResultSet *result = [db executeQuery:sql];
+      while ([result next]) {
+          NSString *col = result.columnNameToIndexMap.allKeys[0];
+          NSNumber *value = [result objectForColumnName:col];
+          recordCount = value.intValue;
+      }
     }];
-    
+
     return recordCount;
 }
 

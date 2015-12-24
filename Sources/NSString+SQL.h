@@ -26,8 +26,6 @@ typedef NS_ENUM(NSInteger, YHOperatorType) {
     YHOperatorTypeGtAndEq,  // >=
     YHOperatorTypeLt,       // <
     YHOperatorTypeLtAndEq,  // <=
-    YHOperatorTypeNotGt,    // !>
-    YHOperatorTypeNotLt,    // !<
     YHOperatorTypeLk,       // like
     YHOperatorTypeNotLk,    // not like
     YHOperatorTypeIn,       // in
@@ -35,6 +33,36 @@ typedef NS_ENUM(NSInteger, YHOperatorType) {
     YHOperatorTypeAnd,      // and
     YHOperatorTypeOr        // or
 };
+
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunused-function"
+// limit
+static NSString *limit(NSNumber *value) { return [NSString stringWithFormat:@"LIMIT %@", value]; }
+
+// order by
+static NSString *order_by(NSString *col, ...) {
+    if (!col) {
+        return @"";
+    }
+    NSMutableArray *argsArray = @[].mutableCopy;
+    va_list params;         //定义一个指向个数可变的参数列表指针;
+    va_start(params, col);  // va_start 得到第一个可变参数地址,
+    id arg;
+    //将第一个参数添加到array
+    id prev = col;
+    [argsArray addObject:prev];
+    // va_arg 指向下一个参数地址
+    while ((arg = va_arg(params, id))) {
+        if (arg) {
+            [argsArray addObject:arg];
+        }
+    }
+    //置空
+    va_end(params);
+    return [NSString stringWithFormat:@"ORDER BY %@", [argsArray componentsJoinedByString:@","]];
+}
+
+#pragma clang diagnostic pop
 
 @interface NSString (SQL)
 
@@ -55,12 +83,6 @@ typedef NS_ENUM(NSInteger, YHOperatorType) {
 
 // <=
 - (NSString * (^)(NSObject *value))lt_and_eq;
-
-// !<
-- (NSString * (^)(NSObject *value))not_lt;
-
-// !>
-- (NSString * (^)(NSObject *value))not_gt;
 
 // between and
 - (NSString * (^)(NSArray *values))btw_and;
@@ -92,20 +114,20 @@ typedef NS_ENUM(NSInteger, YHOperatorType) {
 // or
 - (NSString * (^)(NSString *value))OR;
 
-// order by
-- (NSString * (^)(NSArray *array))order_by;
-
 // desc
 - (NSString * (^)())desc;
 
 // asc
 - (NSString * (^)())asc;
 
+// offset
+- (NSString * (^)(NSNumber *offset))offset;
+
 @end
 
-#pragma mark 工具方法
+@interface NSString (FMDBHelper)
 
-@interface NSString (Utils)
+#pragma mark 工具方法
 
 // 生成UUID
 + (NSString *)generateUUID;

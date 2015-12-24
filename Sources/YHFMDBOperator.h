@@ -38,10 +38,15 @@
 - (BOOL)update:(YHBaseModel *)data where:(NSString *)condition;
 
 // find all
-- (NSArray *)findAll:(Class)cls;
+- (NSArray *)select:(Class)cls;
 
 // find by condition
-- (NSArray *)find:(Class)cls where:(NSString *)condition;
+- (NSArray *)select:(Class)cls where:(NSString *)condition;
+
+- (NSArray *)select:(Class)cls where:(NSString *)condition orderBy:(NSString*)orderBy;
+
+- (NSArray *)select:(Class)cls where:(NSString *)condition orderBy:(NSString*)orderBy limit:(NSString*)limit;
+
 
 // count all
 - (int)count:(Class)cls;
